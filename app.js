@@ -220,3 +220,12 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Erro no servidor' });
 });
 
+// Iniciar o servidor
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
+});
+
+// Exportar o aplicativo para o Vercel
+module.exports = app;
+
