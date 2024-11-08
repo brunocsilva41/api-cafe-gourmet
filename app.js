@@ -210,3 +210,9 @@ app.get('/api/produtos/:id', (req, res) => {
     });
 });
 
+// Middleware para capturar erros
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ message: 'Erro no servidor' });
+});
+
