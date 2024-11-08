@@ -9,15 +9,7 @@ const app = express();
 const jwt = require('jsonwebtoken');
 
 const allowedOrigins = [
-    'https://coffeforyou.netlify.app' ,
-    'https://coffeforyou.netlify.app/produtos',
-    'https://coffeforyou.netlify.app/produtos/${id}',
-    'https://coffeforyou.netlify.app/admin-dashboard',
-    'https://coffeforyou.netlify.app/usuarios',
-    'https://coffeforyou.netlify.app/usuarios/${id}',
-    'https://coffeforyou.netlify.app/logs',
-    'https://coffeforyou.netlify.app/criar-conta',
-    'https://coffeforyou.netlify.app/login-conta'
+    'https://coffeforyou.netlify.app'
 ];
 
 app.use(cors({
