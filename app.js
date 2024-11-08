@@ -181,9 +181,13 @@ app.get('/admin-dashboard', verificarAutenticacao, (req, res) => {
 
 // Rota para buscar produtos na tela produtos.
 app.get('/api/produtos', (req, res) => {
+    console.log('Recebida requisição para /api/produtos'); // Log para depuração
     const sql = 'SELECT id, name, preco, categoria, quantidade, imagem FROM produtos';
     db.query(sql, (err, results) => {
-        if (err) return res.status(500).json({ message: 'Erro no servidor' });
+        if (err) {
+            console.error('Erro ao buscar produtos:', err); // Log para depuração
+            return res.status(500).json({ message: 'Erro no servidor' });
+        }
         // Adiciona log para verificar os dados recuperados
         console.log('Produtos recuperados:', results);
         res.status(200).json(results);

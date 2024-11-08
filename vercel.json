@@ -9,11 +9,11 @@
         { "src": "/(.*)", "dest": "app.js" }
     ],
     "env": {
-        "DB_HOST": "@db_host",
-        "DB_USER": "@db_user",
-        "DB_PASSWORD": "@db_password",
-        "DB_NAME": "@db_name",
-        "DB_PORT": "@db_port",
-        "JWT_SECRET": "@jwt_secret"
+        "DB_HOST": "db-projeto-integrador.c56q2wow6c4s.sa-east-1.rds.amazonaws.com",
+        "DB_USER": "brunosilva41",
+        "DB_PASSWORD": "BCS.silva901341",
+        "DB_NAME": "dbprojeto",
+        "DB_PORT": "3306",
+        "JWT_SECRET": "db88a635c88b881fc700afce3ceb0abb7a5b20ea693bc97d66927550e9cf73570fbf938bc31b8712d207f469468f6292424a455878713efcc37eb6a38df03318"
     }
 }
