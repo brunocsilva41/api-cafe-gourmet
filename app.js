@@ -9,7 +9,7 @@ const app = express();
 const jwt = require('jsonwebtoken');
 
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({ origin: 'https://coffeforyou.netlify.app/' }));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
