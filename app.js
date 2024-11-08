@@ -9,7 +9,15 @@ const app = express();
 const jwt = require('jsonwebtoken');
 
 const allowedOrigins = [
-    'https://coffeforyou.netlify.app/'
+    'https://coffeforyou.netlify.app' ,
+    'https://coffeforyou.netlify.app/produtos',
+    'https://coffeforyou.netlify.app/produtos/${id}',
+    'https://coffeforyou.netlify.app/admin-dashboard',
+    'https://coffeforyou.netlify.app/usuarios',
+    'https://coffeforyou.netlify.app/usuarios/${id}',
+    'https://coffeforyou.netlify.app/logs',
+    'https://coffeforyou.netlify.app/criar-conta',
+    'https://coffeforyou.netlify.app/login-conta'
 ];
 
 app.use(cors({
@@ -21,8 +29,15 @@ app.use(cors({
         }
     }
 }));
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+
+// Middleware para registrar todas as requisições
+app.use((req, res, next) => {
+    console.log(`${req.method} ${req.path}`);
+    next();
+});
 
 // Configuração da conexão com o banco de dados
 const db = mysql.createConnection({
@@ -103,6 +118,7 @@ app.post('/login-conta', [
         }
     });
 });
+
 // Rota para listar usuários
 app.get('/usuarios', (req, res) => {
     const sql = 'SELECT Id, nome, email, role FROM usuarios';
@@ -212,6 +228,11 @@ app.get('/api/produtos/:id', (req, res) => {
         console.log('Produto recuperado:', result[0]); // Log para depuração
         res.status(200).json(result[0]);
     });
+});
+
+// Middleware para capturar erros 404 (rota não encontrada)
+app.use((req, res, next) => {
+    res.status(404).json({ message: 'Rota não encontrada' });
 });
 
 // Middleware para capturar erros
