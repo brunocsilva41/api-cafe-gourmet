@@ -188,7 +188,7 @@ app.get('/admin-dashboard', verificarAutenticacao, (req, res) => {
 });
 
 // Rota para buscar produtos na tela produtos.
-app.get('api/produtos', (req, res) => {
+app.get('/api/produtos', (req, res) => {
     console.log('Recebida requisição para /api/produtos'); // Log para depuração
     const sql = 'SELECT id, name, preco, categoria, quantidade, imagem FROM produtos';
     db.query(sql, (err, results) => {
