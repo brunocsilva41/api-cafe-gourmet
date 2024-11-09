@@ -207,7 +207,7 @@ app.get('/api/produtos', (req, res) => {
         }
         // Adiciona log para verificar os dados recuperados
         console.log('Produtos recuperados:', results);
-        res.status(200).json({ produtos: results });
+        res.status(200).json(results); // Corrigir para retornar o JSON corretamente
     });
 });
 
