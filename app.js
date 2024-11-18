@@ -231,6 +231,35 @@ app.get('/api/produtos/:id', (req, res) => {
     });
 });
 
+app.get('/api/metodos-de-pagamento', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT * FROM metodos_de_pagamento WHERE usuario_id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) {
+            console.error('Erro ao buscar métodos de pagamento:', err);
+            return res.status(500).json({ message: 'Erro no servidor' });
+        }
+        if (result.length === 0) {
+            console.warn(`Métodos de pagamento para o usuário com ID ${id} não encontrados`);
+            return res.status(404).json({ message: 'Métodos de pagamento não encontrados' });
+        }
+        console.log('Métodos de pagamento recuperados:', result);
+        res.status(200).json(result);
+    });
+});
+app.put('/api/add-metodos-de-pagamento/'), (req, res) => {
+    const { id } = req.params;
+    const sql = 'INSERT INTO metodos_de_pagamento (usuario_id, metodo) VALUES (?, ?)';
+    db.query(sql , [id, metodo], (err, result) => {
+        if (err) {
+            console.error('Erro ao adicionar métodos de pagamento:', err);
+            return res.status(500).json({ message: 'Erro no servidor' });
+        }
+        console.log('Métodos de pagamento adicionados:', result);
+        res.status(200).json(result);
+    }
+}
+
 // Middleware para capturar erros 404 (rota não encontrada)
 app.use((req, res, next) => {
     res.status(404).json({ message: 'Rota não encontrada' });
