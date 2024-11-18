@@ -232,42 +232,60 @@ app.get('/api/produtos/:id', (req, res) => {
 });
 
 // Buscar métodos de pagamento por usuário
+// Adicionar um método de pagamento para um usuário
+app.post('/api/add-metodos-de-pagamento/:id', (req, res) => {
+    const { id } = req.params; // ID do usuário
+    const { tipo, detalhes } = req.body; // Tipo e detalhes do método de pagamento
+
+    if (!tipo || !detalhes) {
+        return res.status(400).json({ message: 'Tipo e detalhes do método de pagamento são obrigatórios' });
+    }
+
+    // Validação de campos para tipos de pagamento
+    if (tipo === 'cartao_credito') {
+        const { numero_cartao, validade, cvv } = detalhes;
+        if (!numero_cartao || !validade || !cvv) {
+            return res.status(400).json({ message: 'Número do cartão, validade e CVV são obrigatórios para cartão de crédito' });
+        }
+    } else if (tipo === 'pix') {
+        const { chave_pix } = detalhes;
+        if (!chave_pix) {
+            return res.status(400).json({ message: 'Chave Pix é obrigatória para pagamentos via Pix' });
+        }
+    }
+
+    const sql = 'INSERT INTO metodos_pagamento (usuario_id, tipo, detalhes) VALUES (?, ?, ?)';
+    db.query(sql, [id, tipo, JSON.stringify(detalhes)], (err, result) => {
+        if (err) {
+            console.error('Erro ao adicionar método de pagamento:', err);
+            return res.status(500).json({ message: 'Erro no servidor' });
+        }
+        console.log('Método de pagamento adicionado:', result);
+        res.status(201).json({ message: 'Método de pagamento adicionado com sucesso' });
+    });
+});
+
+
+// Adicionar um método de pagamento para um usuário
+// Buscar métodos de pagamento por usuário
 app.get('/api/metodos-de-pagamento/:id', (req, res) => {
-    const { id } = req.params; // Correção: usar req.params corretamente
+    const { id } = req.params; // ID do usuário recebido nos parâmetros
     const sql = 'SELECT * FROM metodos_pagamento WHERE usuario_id = ?';
+
     db.query(sql, [id], (err, result) => {
         if (err) {
             console.error('Erro ao buscar métodos de pagamento:', err);
             return res.status(500).json({ message: 'Erro no servidor' });
         }
         if (result.length === 0) {
-            console.warn(`Métodos de pagamento para o usuário com ID ${id} não encontrados`);
-            return res.status(404).json({ message: 'Métodos de pagamento não encontrados' });
+            // Retornar mensagem ao frontend se não houver métodos de pagamento
+            return res.status(200).json({ message: 'Não há métodos de pagamento cadastrados', data: [] });
         }
         console.log('Métodos de pagamento recuperados:', result);
-        res.status(200).json(result);
+        res.status(200).json({ data: result });
     });
 });
 
-// Adicionar um método de pagamento para um usuário
-app.post('/api/add-metodos-de-pagamento/:id', (req, res) => { // Correção: usar POST e :id na rota
-    const { id } = req.params; // Capturar ID do usuário
-    const { metodo } = req.body; // Capturar método do corpo da requisição
-
-    if (!metodo) {
-        return res.status(400).json({ message: 'Método de pagamento é obrigatório' }); // Validação de dados
-    }
-
-    const sql = 'INSERT INTO metodos_pagamento (usuario_id, metodo) VALUES (?, ?)';
-    db.query(sql, [id, metodo], (err, result) => {
-        if (err) {
-            console.error('Erro ao adicionar métodos de pagamento:', err);
-            return res.status(500).json({ message: 'Erro no servidor' });
-        }
-        console.log('Métodos de pagamento adicionados:', result);
-        res.status(201).json({ message: 'Método de pagamento adicionado com sucesso', id: result.insertId });
-    });
-});
 
 
 // Middleware para capturar erros 404 (rota não encontrada)
