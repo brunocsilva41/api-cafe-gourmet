@@ -231,8 +231,9 @@ app.get('/api/produtos/:id', (req, res) => {
     });
 });
 
-app.get('/api/metodos-de-pagamento', (req, res) => {
-    const { id } = req.params;
+// Buscar métodos de pagamento por usuário
+app.get('/api/metodos-de-pagamento/:id', (req, res) => {
+    const { id } = req.params; // Correção: usar req.params corretamente
     const sql = 'SELECT * FROM metodos_de_pagamento WHERE usuario_id = ?';
     db.query(sql, [id], (err, result) => {
         if (err) {
@@ -247,18 +248,27 @@ app.get('/api/metodos-de-pagamento', (req, res) => {
         res.status(200).json(result);
     });
 });
-app.put('/api/add-metodos-de-pagamento/'), (req, res) => {
-    const { id } = req.params;
+
+// Adicionar um método de pagamento para um usuário
+app.post('/api/add-metodos-de-pagamento/:id', (req, res) => { // Correção: usar POST e :id na rota
+    const { id } = req.params; // Capturar ID do usuário
+    const { metodo } = req.body; // Capturar método do corpo da requisição
+
+    if (!metodo) {
+        return res.status(400).json({ message: 'Método de pagamento é obrigatório' }); // Validação de dados
+    }
+
     const sql = 'INSERT INTO metodos_de_pagamento (usuario_id, metodo) VALUES (?, ?)';
-    db.query(sql , [id, metodo], (err, result) => {
+    db.query(sql, [id, metodo], (err, result) => {
         if (err) {
             console.error('Erro ao adicionar métodos de pagamento:', err);
             return res.status(500).json({ message: 'Erro no servidor' });
         }
         console.log('Métodos de pagamento adicionados:', result);
-        res.status(200).json(result);
-    }
-}
+        res.status(201).json({ message: 'Método de pagamento adicionado com sucesso', id: result.insertId });
+    });
+});
+
 
 // Middleware para capturar erros 404 (rota não encontrada)
 app.use((req, res, next) => {
