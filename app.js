@@ -57,16 +57,18 @@ db.connect(err => {
 app.post('/criar-conta', [
     body('name').isLength({ min: 1 }).trim().escape(),
     body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 3 }).trim().escape()
+    body('password').isLength({ min: 3 }).trim().escape(),
+    body('address').isLength({ min: 1 }).trim().escape(),
+    body('phone').isLength({ min: 1 }).trim().escape()
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-    const { name, email, password } = req.body;
+    const { name, email, password, address, phone } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const sql = `INSERT INTO usuarios (nome, email, senha) VALUES (?, ?, ?)`;
-    db.query(sql, [name, email, hashedPassword], (err, result) => {
+    const sql = `INSERT INTO usuarios (nome, email, senha, endereco, telefone_usuario) VALUES (?, ?, ?, ?, ?)`;
+    db.query(sql, [name, email, hashedPassword, address, phone], (err, result) => {
         if (err) throw err;
         res.status(201).json({ message: 'Conta criada com sucesso!' });
     });
@@ -231,62 +233,27 @@ app.get('/api/produtos/:id', (req, res) => {
     });
 });
 
-// Adicionar um método de pagamento para um usuário
-app.post('/api/add-metodos-de-pagamento/:id', (req, res) => {
-    const { id } = req.params; // ID do usuário
-    const { tipo, detalhes } = req.body; // Tipo e detalhes do método de pagamento
-
-    if (!tipo || !detalhes) {
-        return res.status(400).json({ message: 'Tipo e detalhes do método de pagamento são obrigatórios' });
-    }
-
-    // Validação de campos para tipos de pagamento
-    if (tipo === 'cartao_credito') {
-        const [numero_cartao, validade, cvv] = detalhes.split(';');
-        if (!numero_cartao || !validade || !cvv) {
-            return res.status(400).json({ message: 'Número do cartão, validade e CVV são obrigatórios para cartão de crédito' });
-        }
-    } else if (tipo === 'pix') {
-        const chave_pix = detalhes;
-        if (!chave_pix) {
-            return res.status(400).json({ message: 'Chave Pix é obrigatória para pagamentos via Pix' });
-        }
-    }
-
-    const sql = 'INSERT INTO metodos_pagamento (usuario_id, tipo, detalhes) VALUES (?, ?, ?)';
-    db.query(sql, [id, tipo, detalhes], (err, result) => {
-        if (err) {
-            console.error('Erro ao adicionar método de pagamento:', err);
-            return res.status(500).json({ message: 'Erro no servidor' });
-        }
-        console.log('Método de pagamento adicionado:', result);
-        res.status(201).json({ message: 'Método de pagamento adicionado com sucesso' });
+// Rota para buscar detalhes do usuário
+app.get('/api/user-details/:id', (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT nome, email, data_criacao, endereco, telefone_usuario, imagem_usuario FROM usuarios WHERE Id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Erro no servidor' });
+        if (result.length === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
+        res.status(200).json(result[0]);
     });
 });
 
-
-// Buscar métodos de pagamento por usuário
-app.get('/api/metodos-de-pagamento/:id', (req, res) => {
-    const { id } = req.params; // ID do usuário recebido nos parâmetros
-    console.log(`Buscando métodos de pagamento para o usuário com ID: ${id}`); // Log para depuração
-    const sql = 'SELECT * FROM metodos_pagamento WHERE usuario_id = ?';
-
-    db.query(sql, [id], (err, results) => {
-        if (err) {
-            console.error('Erro ao buscar métodos de pagamento:', err);
-            return res.status(500).json({ message: 'Erro no servidor' });
-        }
-        if (results.length === 0) {
-            // Retornar mensagem ao frontend se não houver métodos de pagamento
-            console.log('Nenhum método de pagamento encontrado para o usuário'); // Log para depuração
-            return res.status(200).json({ message: 'Não há métodos de pagamento cadastrados', data: [] });
-        }
-        console.log('Métodos de pagamento recuperados:', results); // Log para depuração
-        res.status(200).json({ data: results });
+// Rota para upload de imagem do usuário
+app.post('/api/upload-imagem/:id', (req, res) => {
+    const { id } = req.params;
+    const { imagem_usuario } = req.body;
+    const sql = 'UPDATE usuarios SET imagem_usuario = ? WHERE Id = ?';
+    db.query(sql, [imagem_usuario, id], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Erro no servidor' });
+        res.status(200).json({ message: 'Imagem do usuário atualizada com sucesso!' });
     });
 });
-
-
 
 // Middleware para capturar erros 404 (rota não encontrada)
 app.use((req, res, next) => {
