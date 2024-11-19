@@ -243,19 +243,19 @@ app.post('/api/add-metodos-de-pagamento/:id', (req, res) => {
 
     // Validação de campos para tipos de pagamento
     if (tipo === 'cartao_credito') {
-        const { numero_cartao, validade, cvv } = detalhes;
+        const [numero_cartao, validade, cvv] = detalhes.split(';');
         if (!numero_cartao || !validade || !cvv) {
             return res.status(400).json({ message: 'Número do cartão, validade e CVV são obrigatórios para cartão de crédito' });
         }
     } else if (tipo === 'pix') {
-        const { chave_pix } = detalhes;
+        const chave_pix = detalhes;
         if (!chave_pix) {
             return res.status(400).json({ message: 'Chave Pix é obrigatória para pagamentos via Pix' });
         }
     }
 
     const sql = 'INSERT INTO metodos_pagamento (usuario_id, tipo, detalhes) VALUES (?, ?, ?)';
-    db.query(sql, [id, tipo, JSON.stringify(detalhes)], (err, result) => {
+    db.query(sql, [id, tipo, detalhes], (err, result) => {
         if (err) {
             console.error('Erro ao adicionar método de pagamento:', err);
             return res.status(500).json({ message: 'Erro no servidor' });
