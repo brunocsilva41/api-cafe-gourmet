@@ -268,6 +268,7 @@ app.post('/api/add-metodos-de-pagamento/:id', (req, res) => {
 // Buscar métodos de pagamento por usuário
 app.get('/api/metodos-de-pagamento/:id', (req, res) => {
     const { id } = req.params; // ID do usuário recebido nos parâmetros
+    console.log(`Buscando métodos de pagamento para o usuário com ID: ${id}`); // Log para depuração
     const sql = 'SELECT * FROM metodos_pagamento WHERE usuario_id = ?';
 
     db.query(sql, [id], (err, results) => {
@@ -277,9 +278,10 @@ app.get('/api/metodos-de-pagamento/:id', (req, res) => {
         }
         if (results.length === 0) {
             // Retornar mensagem ao frontend se não houver métodos de pagamento
+            console.log('Nenhum método de pagamento encontrado para o usuário'); // Log para depuração
             return res.status(200).json({ message: 'Não há métodos de pagamento cadastrados', data: [] });
         }
-        console.log('Métodos de pagamento recuperados:', results);
+        console.log('Métodos de pagamento recuperados:', results); // Log para depuração
         res.status(200).json({ data: results });
     });
 });
