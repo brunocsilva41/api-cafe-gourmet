@@ -231,7 +231,6 @@ app.get('/api/produtos/:id', (req, res) => {
     });
 });
 
-// Buscar métodos de pagamento por usuário
 // Adicionar um método de pagamento para um usuário
 app.post('/api/add-metodos-de-pagamento/:id', (req, res) => {
     const { id } = req.params; // ID do usuário
