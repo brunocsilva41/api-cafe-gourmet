@@ -109,6 +109,9 @@ app.post('/login-conta', [
                     userId: user.Id,
                     userName: user.nome,
                     userEmail: user.email,
+                    userAddress: user.endereco,
+                    userPhone: user.telefone_usuario,
+                    userImage: user.imagem_usuario,
                     role: user.role,
                 });
             } else {
