@@ -203,16 +203,12 @@ router.get('/api/user-details/:id', (req, res) => {
 });
 
 // Rota para upload de imagem do usuário
-router.post('/api/upload-image', verificarAutenticacao, upload.single('image'), async (req, res) => {
+router.post('/api/upload-image', upload.single('image'), async (req, res) => {
     const userId = req.body.userId;
     const imageData = req.file.buffer; // Arquivo em formato binário
 
     if (!userId || !imageData) {
         return res.status(400).send({ message: 'ID do usuário ou imagem não fornecidos.' });
-    }
-
-    if (userId !== req.userId) {
-        return res.status(403).send({ message: 'Acesso negado. Você só pode alterar sua própria imagem.' });
     }
 
     try {
