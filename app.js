@@ -7,6 +7,8 @@ require('dotenv').config();
 const cors = require('cors'); 
 const app = express();
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 const allowedOrigins = [
     'https://coffeforyou.netlify.app',
@@ -248,9 +250,9 @@ app.get('/api/user-details/:id', (req, res) => {
 });
 
 // Rota para upload de imagem do usuário
-app.post('/api/upload-imagem/:id', (req, res) => {
+app.post('/api/upload-imagem/:id', upload.single('imagem_usuario'), (req, res) => {
     const { id } = req.params;
-    const { imagem_usuario } = req.body;
+    const imagem_usuario = req.file.buffer.toString('base64');
     const sql = 'UPDATE usuarios SET imagem_usuario = ? WHERE Id = ?';
     db.query(sql, [imagem_usuario, id], (err, result) => {
         if (err) return res.status(500).json({ message: 'Erro no servidor' });
