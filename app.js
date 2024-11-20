@@ -106,7 +106,7 @@ app.post('/login-conta', [
                 res.status(200).json({
                     message: 'Login realizado com sucesso!',
                     token,
-                    userId: user.Id,
+                    userId: user.id,
                     userName: user.nome,
                     userEmail: user.email,
                     userAddress: user.endereco,
