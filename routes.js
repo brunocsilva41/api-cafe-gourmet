@@ -23,8 +23,9 @@ router.post('/criar-conta', [
     }
     const { name, email, password, address, phone } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const sql = `INSERT INTO usuarios (nome, email, senha, endereco, telefone_usuario) VALUES (?, ?, ?, ?, ?)`;
-    db.query(sql, [name, email, hashedPassword, address, phone], (err, result) => {
+    const role = 'user'; // Definir o valor de role como 'user'
+    const sql = `INSERT INTO usuarios (nome, email, senha, endereco, telefone_usuario, role) VALUES (?, ?, ?, ?, ?, ?)`;
+    db.query(sql, [name, email, hashedPassword, address, phone, role], (err, result) => {
         if (err) throw err;
         res.status(201).json({ message: 'Conta criada com sucesso!' });
     });
