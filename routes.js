@@ -84,7 +84,7 @@ router.post('/login-conta', [
 
 // Rota para listar usuários
 router.get('/usuarios', (req, res) => {
-    const sql = 'SELECT Id, nome, email, role FROM usuarios';
+    const sql = 'SELECT Id, nome, email, role , endereco ,telefone_usuario FROM usuarios';
     db.query(sql, (err, results) => {
         if (err) return res.status(500).json({ message: 'Erro no servidor' });
         res.status(200).json(results);
@@ -189,6 +189,41 @@ router.get('/api/produtos/:id', (req, res) => {
         }
         console.log('Produto recuperado:', result[0]); // Log para depuração
         res.status(200).json(result[0]);
+    });
+});
+
+// Rota para buscar detalhes do usuário
+router.get('/api/user-details/:id', verificarAutenticacao, (req, res) => {
+    const { id } = req.params;
+    const sql = 'SELECT id, nome, email, data_criacao, endereco, telefone_usuario, imagem_usuario, role FROM usuarios WHERE Id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Erro no servidor' });
+        if (result.length === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
+        res.status(200).json(result[0]);
+    });
+});
+
+// Rota para atualizar todas as informações do usuário
+router.put('/api/user-details/:id', verificarAutenticacao, [
+    body('name').optional().trim().escape(),
+    body('email').optional().isEmail().normalizeEmail(),
+    body('address').optional().trim().escape(),
+    body('phone').optional().trim().escape(),
+    body('role').optional().isIn(['admin', 'user'])
+], (req, res) => {
+    const { id } = req.params;
+    const { name, email, address, phone, role } = req.body;
+    let sql = 'UPDATE usuarios SET ';
+    let updates = [];
+    if (name) updates.push(`nome = '${name}'`);
+    if (email) updates.push(`email = '${email}'`);
+    if (address) updates.push(`endereco = '${address}'`);
+    if (phone) updates.push(`telefone_usuario = '${phone}'`);
+    if (role) updates.push(`role = '${role}'`);
+    sql += updates.join(', ') + ' WHERE Id = ?';
+    db.query(sql, [id], (err, result) => {
+        if (err) return res.status(500).json({ message: 'Erro no servidor' });
+        res.status(200).json({ message: 'Usuário atualizado com sucesso!' });
     });
 });
 
