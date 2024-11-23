@@ -293,7 +293,7 @@ router.post('/criar-pedido/:userId', [
     }
 
     const { userId, produtos, total } = req.body;
-    const sqlPedido = `INSERT INTO pedidos (user_id, total) VALUES (?, ?)`;
+    const sqlPedido = `INSERT INTO pedidos (user_id, produtos , total ) VALUES (?, ?, ?)`;
 
     try {
         const [result] = await db.promise().execute(sqlPedido, [userId, total]);
