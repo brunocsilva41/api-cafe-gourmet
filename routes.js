@@ -289,24 +289,24 @@ router.post('/criar-pedido', [
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        console.log('Erros de validação:', errors.array()); // Adicionar log para depuração
         return res.status(400).json({ errors: errors.array() });
     }
-
     const { userId, produtos, total } = req.body;
-    const sqlPedido = `INSERT INTO pedidos (user_id, total) VALUES (?, ?)`;
+    console.log('Dados recebidos para criar pedido:', req.body); // Adicionar log para depuração
+
+    // Converter produtos para texto no formato "nome:quantidade"
+    const produtosTexto = produtos.map(produto => `${produto.nome}:${produto.quantidade}`).join(',');
+
+    const sqlPedido = `INSERT INTO pedidos (user_id, produtos, total) VALUES (?, ?, ?)`;
 
     try {
-        const [result] = await db.promise().execute(sqlPedido, [userId, total]);
+        const [result] = await db.promise().execute(sqlPedido, [userId, produtosTexto, total]);
         const pedidoId = result.insertId;
-
-        const sqlProdutos = `INSERT INTO pedidos_produtos (pedido_id, produto_id, quantidade) VALUES ?`;
-        const produtosValues = produtos.map(produto => [pedidoId, produto.id, produto.quantidade]);
-
-        await db.promise().query(sqlProdutos, [produtosValues]);
 
         res.status(201).json({ message: 'Pedido criado com sucesso!', pedidoId });
     } catch (error) {
-        console.error('Erro ao criar pedido:', error);
+        console.error('Erro ao criar pedido:', error); // Adicionar log para depuração
         res.status(500).json({ message: 'Erro no servidor' });
     }
 });
