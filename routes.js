@@ -264,9 +264,21 @@ router.post('/api/upload-image', upload.single('image'), async (req, res) => {
         res.status(500).send({ message: 'Erro ao atualizar imagem do usuário.' });
     }
 });
+//Rota para Exibir os Pedidos
+router.get('/obter-pedidos/:userId'), async (req, res) =>{
+    const {userId} = req.params;
+    const sql = 'SELECT * FROM pedidos WHERE user_id = ?';
+    try {
+        const [results] = await db.promise().query(sql, [userId]);
+        res.status(200).json(results);
+    } catch (error) {
+        console.error('Erro ao buscar pedidos:', error);
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
 
+}
 // Rota para criar pedido
-router.post('/criar-pedido', [
+router.post('/criar-pedido/${userId}', [
     body('userId').isInt(),
     body('produtos').isArray(),
     body('total').isFloat()
