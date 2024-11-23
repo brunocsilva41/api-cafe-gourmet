@@ -241,8 +241,7 @@ router.get('/api/user-details/:id', (req, res) => {
 // Rota para upload de imagem do usuário
 router.post('/api/upload-image', upload.single('image'), async (req, res) => {
     const userId = req.body.userId;
-    const imageData = req.file.buffer; // Arquivo em formato binário
-
+    const imageData = req.file.buffer; 
     if (!userId || !imageData) {
         return res.status(400).send({ message: 'ID do usuário ou imagem não fornecidos.' });
     }
@@ -254,10 +253,9 @@ router.post('/api/upload-image', upload.single('image'), async (req, res) => {
             WHERE Id = ?
         `;
 
-        // Atualizar a imagem no banco de dados
         await db.promise().execute(sqlUpdateBlobQuery, [imageData, userId]);
 
-        // Retorne a URL ou o caminho da imagem (aqui você pode retornar uma URL para a imagem ou o próprio base64)
+        
         res.status(200).send({ imageUrl: `data:image/jpeg;base64,${imageData.toString('base64')}` });
     } catch (error) {
         console.error('Erro ao atualizar imagem no banco de dados:', error);
@@ -289,14 +287,13 @@ router.post('/criar-pedido', [
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        console.log('Erros de validação:', errors.array()); // Adicionar log para depuração
+        console.log('Erros de validação:', errors.array()); 
         return res.status(400).json({ errors: errors.array() });
     }
     const { userId, produtos, total } = req.body;
-    console.log('Dados recebidos para criar pedido:', req.body); // Adicionar log para depuração
+    console.log('Dados recebidos para criar pedido:', req.body); 
 
-    // Converter produtos para texto no formato "nome:quantidade"
-    const produtosTexto = produtos.map(produto => `${produto.nome}:${produto.quantidade}`).join(',');
+    const produtosTexto = produtos.map(produto => `${produto.id}:${produto.nome}:${produto.quantidade}`).join(',');
 
     const sqlPedido = `INSERT INTO pedidos (user_id, produtos, total) VALUES (?, ?, ?)`;
 
@@ -306,7 +303,7 @@ router.post('/criar-pedido', [
 
         res.status(201).json({ message: 'Pedido criado com sucesso!', pedidoId });
     } catch (error) {
-        console.error('Erro ao criar pedido:', error); // Adicionar log para depuração
+        console.error('Erro ao criar pedido:', error); 
         res.status(500).json({ message: 'Erro no servidor' });
     }
 });
