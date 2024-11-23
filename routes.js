@@ -265,4 +265,34 @@ router.post('/api/upload-image', upload.single('image'), async (req, res) => {
     }
 });
 
+// Rota para criar pedido
+router.post('/criar-pedido', [
+    body('userId').isInt(),
+    body('produtos').isArray(),
+    body('total').isFloat()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, produtos, total } = req.body;
+    const sqlPedido = `INSERT INTO pedidos (user_id, total) VALUES (?, ?)`;
+
+    try {
+        const [result] = await db.promise().execute(sqlPedido, [userId, total]);
+        const pedidoId = result.insertId;
+
+        const sqlProdutos = `INSERT INTO pedidos_produtos (pedido_id, produto_id, quantidade) VALUES ?`;
+        const produtosValues = produtos.map(produto => [pedidoId, produto.id, produto.quantidade]);
+
+        await db.promise().query(sqlProdutos, [produtosValues]);
+
+        res.status(201).json({ message: 'Pedido criado com sucesso!', pedidoId });
+    } catch (error) {
+        console.error('Erro ao criar pedido:', error);
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
+});
+
 module.exports = router;
