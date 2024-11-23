@@ -283,7 +283,6 @@ router.get('/obter-pedidos/:userId', async (req, res) => {
 
 // Rota para criar pedido
 router.post('/criar-pedido/:userId', [
-    body('userId').isInt(),
     body('produtos').isArray(),
     body('total').isFloat()
 ], async (req, res) => {
@@ -292,8 +291,9 @@ router.post('/criar-pedido/:userId', [
         return res.status(400).json({ errors: errors.array() });
     }
 
-    const { userId, produtos, total } = req.body;
-    const sqlPedido = `INSERT INTO pedidos (user_id, produtos , total ) VALUES (?, ?, ?)`;
+    const { userId } = req.params;
+    const { produtos, total } = req.body;
+    const sqlPedido = `INSERT INTO pedidos (user_id, total) VALUES (?, ?)`;
 
     try {
         const [result] = await db.promise().execute(sqlPedido, [userId, total]);
