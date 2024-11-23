@@ -265,12 +265,15 @@ router.post('/api/upload-image', upload.single('image'), async (req, res) => {
     }
 });
 //Rota para Exibir os Pedidos
-router.get('/obter-pedidos/:userId'), async (req, res) =>{
+router.get('/obter-pedidos/:id'), async (req, res) =>{
     const {userId} = req.params;
     const sql = 'SELECT * FROM pedidos WHERE user_id = ?';
     try {
         const [results] = await db.promise().query(sql, [userId]);
         res.status(200).json(results);
+        if(results == null){
+            res.status(404).json({message: 'Nenhum pedido encontrado'});
+        }
     } catch (error) {
         console.error('Erro ao buscar pedidos:', error);
         res.status(500).json({ message: 'Erro no servidor' });
