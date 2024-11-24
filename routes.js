@@ -95,7 +95,9 @@ router.get('/usuarios', (req, res) => {
 router.put('/usuarios/:id', [
     body('name').optional().trim().escape(),
     body('email').optional().isEmail().normalizeEmail(),
-    body('role').optional().isIn(['admin', 'user'])  // Role como exemplo de permissão
+    body('role').optional().isIn(['admin', 'user']),
+    body('endereco').optional().trim().escape(),
+    body('telefone_usuario').optional().trim().escape(),
 ], (req, res) => {
     const { id } = req.params;
     const { name, email, role , endereco , telefone_usuario } = req.body;
