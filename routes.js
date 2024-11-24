@@ -98,12 +98,15 @@ router.put('/usuarios/:id', [
     body('role').optional().isIn(['admin', 'user'])  // Role como exemplo de permissão
 ], (req, res) => {
     const { id } = req.params;
-    const { name, email, role } = req.body;
+    const { name, email, role , endereco , telefone_usuario } = req.body;
     let sql = 'UPDATE usuarios SET ';
     let updates = [];
     if (name) updates.push(`nome = '${name}'`);
     if (email) updates.push(`email = '${email}'`);
     if (role) updates.push(`role = '${role}'`);
+    if(endereco) updates.push(`endereco = '${endereco}'`);
+    if(telefone_usuario) updates.push(`telefone_usuario = '${telefone_usuario}'`);
+
     sql += updates.join(', ') + ' WHERE Id = ?';
     db.query(sql, [id], (err, result) => {
         if (err) return res.status(500).json({ message: 'Erro no servidor' });
