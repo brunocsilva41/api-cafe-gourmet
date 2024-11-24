@@ -293,7 +293,7 @@ router.post('/criar-pedido', [
     const { userId, produtos, total } = req.body;
     console.log('Dados recebidos para criar pedido:', req.body); 
 
-    const produtosTexto = produtos.map(produto => `${produto.id}:${produto.nome}:${produto.quantidade}`).join(',');
+    const produtosTexto = produtos.map(produto => `${produto.id}:${produto.nome}:${produto.quantidade}:${produto.preco}`).join(',');
 
     const sqlPedido = `INSERT INTO pedidos (user_id, produtos, total) VALUES (?, ?, ?)`;
 
