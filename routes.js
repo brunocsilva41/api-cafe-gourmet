@@ -9,7 +9,6 @@ const mysql = require('mysql2/promise');
 
 const router = express.Router();
 
-// Rota para criar conta
 router.post('/criar-conta', [
     body('name').isLength({ min: 1 }).trim().escape(),
     body('email').isEmail().normalizeEmail(),
@@ -23,7 +22,7 @@ router.post('/criar-conta', [
     }
     const { name, email, password, address, phone } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
-    const role = 'user'; // Definir o valor de role como 'user'
+    const role = 'user';
     const sql = `INSERT INTO usuarios (nome, email, senha, endereco, telefone_usuario, role) VALUES (?, ?, ?, ?, ?, ?)`;
     db.query(sql, [name, email, hashedPassword, address, phone, role], (err, result) => {
         if (err) throw err;
@@ -31,27 +30,26 @@ router.post('/criar-conta', [
     });
 });
 
-// Rota para login
 router.post('/login-conta', [
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 1 }).trim().escape()
 ], (req, res) => {
-    console.log('Dados recebidos para login:', req.body); // Adicionar log para depuração
+    console.log('Dados recebidos para login:', req.body);
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        console.log('Erros de validação:', errors.array()); // Adicionar log para depuração
+        console.log('Erros de validação:', errors.array()); 
         return res.status(400).json({ errors: errors.array() });
     }
     const { email, password } = req.body;
     const sql = `SELECT * FROM usuarios WHERE email = ?`;
     db.query(sql, [email], async (err, result) => {
         if (err) {
-            console.error('Erro na consulta ao banco de dados:', err); // Adicionar log para depuração
+            console.error('Erro na consulta ao banco de dados:', err); 
             return res.status(500).json({ message: 'Erro no servidor' });
         }
         if (result.length > 0) {
             const user = result[0];
-            console.log('Usuário encontrado:', user); // Adicionar log para depuração
+            console.log('Usuário encontrado:', user); 
             const match = await bcrypt.compare(password, user.senha);
             if (match) {
                 const token = jwt.sign(
@@ -59,7 +57,7 @@ router.post('/login-conta', [
                     process.env.JWT_SECRET,
                     { expiresIn: '1h' }
                 );
-                console.log('Login realizado com sucesso, gerando token'); // Adicionar log para depuração
+                console.log('Login realizado com sucesso, gerando token'); 
                 res.status(200).json({
                     message: 'Login realizado com sucesso!',
                     token,
@@ -72,17 +70,16 @@ router.post('/login-conta', [
                     role: user.role,
                 });
             } else {
-                console.log('Senha inválida'); // Adicionar log para depuração
+                console.log('Senha inválida'); 
                 res.status(401).json({ message: 'Senha inválida' });
             }
         } else {
-            console.log('Usuário não encontrado'); // Adicionar log para depuração
+            console.log('Usuário não encontrado');
             res.status(401).json({ message: 'Usuário não encontrado' });
         }
     });
 });
 
-// Rota para listar usuários
 router.get('/usuarios', (req, res) => {
     const sql = 'SELECT Id, nome, email, role , endereco ,telefone_usuario FROM usuarios';
     db.query(sql, (err, results) => {
@@ -91,7 +88,6 @@ router.get('/usuarios', (req, res) => {
     });
 });
 
-// Rota para atualizar informações do usuário
 router.put('/usuarios/:id', [
     body('name').optional().trim().escape(),
     body('email').optional().isEmail().normalizeEmail(),
@@ -116,7 +112,6 @@ router.put('/usuarios/:id', [
     });
 });
 
-// Rota para deletar usuário
 router.delete('/usuarios/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'DELETE FROM usuarios WHERE Id = ?';
@@ -126,8 +121,7 @@ router.delete('/usuarios/:id', (req, res) => {
     });
 });
 
-// Rota para registrar logs de requisições
-const requestLogs = [];  // Em produção, utilizar um banco ou serviço de logs
+const requestLogs = [];
 
 router.use((req, res, next) => {
     const log = {
@@ -140,12 +134,10 @@ router.use((req, res, next) => {
     next();
 });
 
-// Rota para visualizar logs de requisições
 router.get('/logs', (req, res) => {
     res.status(200).json(requestLogs);
 });
 
-// Middleware para proteger rota e verificar correspondência de ID
 function verificarAutenticacao(req, res, next) {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) return res.status(403).json({ message: 'Token não fornecido' });
@@ -157,47 +149,42 @@ function verificarAutenticacao(req, res, next) {
     });
 }
 
-// Exemplo de rota protegida para o dashboard
 router.get('/admin-dashboard', verificarAutenticacao, (req, res) => {
     res.status(200).json({ message: 'Acesso autorizado' });
 });
 
-// Rota para buscar produtos na tela produtos.
 router.get('/api/produtos', (req, res) => {
-    console.log('Recebida requisição para /api/produtos'); // Log para depuração
+    console.log('Recebida requisição para /api/produtos');
     const sql = 'SELECT id, name, preco, categoria, quantidade, imagem FROM produtos';
     db.query(sql, (err, results) => {
         if (err) {
-            console.error('Erro ao buscar produtos:', err); // Log para depuração
+            console.error('Erro ao buscar produtos:', err);
             return res.status(500).json({ message: 'Erro no servidor' });
         }
-        // Adiciona log para verificar os dados recuperados
         console.log('Produtos recuperados:', results);
-        res.status(200).json(results); // Corrigir para retornar o JSON corretamente
+        res.status(200).json(results);
     });
 });
 
-// Rota para buscar produto por ID
 router.get('/api/produtos/:id', (req, res) => {
     const { id } = req.params; 
     console.log(`Buscando produto com ID: ${id}`); 
     const sql = 'SELECT * FROM produtos WHERE id = ?';
     db.query(sql, [id], (err, result) => {
         if (err) {
-            console.log('Erro ao buscar produto:', err); // Log para depuração
-            console.error('Erro ao buscar produto:', err); // Log para depuração
+            console.log('Erro ao buscar produto:', err);
+            console.error('Erro ao buscar produto:', err);
             return res.status(500).json({ message: 'Erro no servidor' });
         }
         if (result.length === 0) {
-            console.warn(`Produto com ID ${id} não encontrado`); // Log para depuração
+            console.warn(`Produto com ID ${id} não encontrado`);
             return res.status(404).json({ message: 'Produto não encontrado' });
         }
-        console.log('Produto recuperado:', result[0]); // Log para depuração
+        console.log('Produto recuperado:', result[0]);
         res.status(200).json(result[0]);
     });
 });
 
-// Rota para buscar detalhes do usuário
 router.get('/api/user-details/:id', verificarAutenticacao, (req, res) => {
     const { id } = req.params;
     const sql = 'SELECT id, nome, email, data_criacao, endereco, telefone_usuario, imagem_usuario, role FROM usuarios WHERE Id = ?';
@@ -208,7 +195,6 @@ router.get('/api/user-details/:id', verificarAutenticacao, (req, res) => {
     });
 });
 
-// Rota para atualizar todas as informações do usuário
 router.put('/api/user-details/:id', verificarAutenticacao, [
     body('name').optional().trim().escape(),
     body('email').optional().isEmail().normalizeEmail(),
@@ -232,7 +218,6 @@ router.put('/api/user-details/:id', verificarAutenticacao, [
     });
 });
 
-// Rota para buscar detalhes do usuário
 router.get('/api/user-details/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'SELECT  id , nome, email, data_criacao, endereco, telefone_usuario, imagem_usuario FROM usuarios WHERE Id = ?';
@@ -243,7 +228,6 @@ router.get('/api/user-details/:id', (req, res) => {
     });
 });
 
-// Rota para upload de imagem do usuário
 router.post('/api/upload-image', upload.single('image'), async (req, res) => {
     const userId = req.body.userId;
     const imageData = req.file.buffer; 
@@ -268,7 +252,6 @@ router.post('/api/upload-image', upload.single('image'), async (req, res) => {
     }
 });
 
-// Rota para obter pedidos
 router.get('/obter-pedidos/:userId', async (req, res) => {
     const { userId } = req.params;
     const sql = 'SELECT * FROM pedidos WHERE user_id = ?';
@@ -284,7 +267,6 @@ router.get('/obter-pedidos/:userId', async (req, res) => {
     }
 });
 
-// Rota para criar pedido
 router.post('/criar-pedido', [
     body('userId').isInt(),
     body('produtos').isArray(),
