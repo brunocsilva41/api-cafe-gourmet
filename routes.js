@@ -100,26 +100,32 @@ router.put('/usuarios/:id', [
     let sql = 'UPDATE usuarios SET ';
     let updates = [];
     let values = [];
+    let changedFields = [];
 
     if (name) {
         updates.push('nome = ?');
         values.push(name);
+        changedFields.push('nome');
     }
     if (email) {
         updates.push('email = ?');
         values.push(email);
+        changedFields.push('email');
     }
     if (role) {
         updates.push('role = ?');
         values.push(role);
+        changedFields.push('role');
     }
     if (endereco) {
         updates.push('endereco = ?');
         values.push(endereco);
+        changedFields.push('endereco');
     }
     if (telefone_usuario) {
         updates.push('telefone_usuario = ?');
         values.push(telefone_usuario);
+        changedFields.push('telefone_usuario');
     }
 
     if (updates.length === 0) {
@@ -136,8 +142,9 @@ router.put('/usuarios/:id', [
         }
 
         const [updatedUser] = await db.promise().query('SELECT Id, nome, email, role, endereco, telefone_usuario FROM usuarios WHERE Id = ?', [id]);
-        res.status(200).json({ message: 'Usuário atualizado com sucesso!', user: updatedUser[0] });
+        res.status(200).json({ message: `Usuário atualizado com sucesso! Campos alterados: ${changedFields.join(', ')}`, user: updatedUser[0] });
     } catch (err) {
+        console.error('Erro ao atualizar usuário:', err);
         res.status(500).json({ message: 'Erro no servidor' });
     }
 });
