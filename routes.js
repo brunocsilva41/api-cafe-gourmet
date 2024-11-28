@@ -94,22 +94,50 @@ router.put('/usuarios/:id', [
     body('role').optional().isIn(['admin', 'user']),
     body('endereco').optional().trim().escape(),
     body('telefone_usuario').optional().trim().escape(),
-], (req, res) => {
+], async (req, res) => {
     const { id } = req.params;
-    const { name, email, role , endereco , telefone_usuario } = req.body;
+    const { name, email, role, endereco, telefone_usuario } = req.body;
     let sql = 'UPDATE usuarios SET ';
     let updates = [];
-    if (name) updates.push(`nome = '${name}'`);
-    if (email) updates.push(`email = '${email}'`);
-    if (role) updates.push(`role = '${role}'`);
-    if(endereco) updates.push(`endereco = '${endereco}'`);
-    if(telefone_usuario) updates.push(`telefone_usuario = '${telefone_usuario}'`);
+    let values = [];
+
+    if (name) {
+        updates.push('nome = ?');
+        values.push(name);
+    }
+    if (email) {
+        updates.push('email = ?');
+        values.push(email);
+    }
+    if (role) {
+        updates.push('role = ?');
+        values.push(role);
+    }
+    if (endereco) {
+        updates.push('endereco = ?');
+        values.push(endereco);
+    }
+    if (telefone_usuario) {
+        updates.push('telefone_usuario = ?');
+        values.push(telefone_usuario);
+    }
+
+    if (updates.length === 0) {
+        return res.status(400).json({ message: 'Nenhum campo para atualizar' });
+    }
 
     sql += updates.join(', ') + ' WHERE Id = ?';
-    db.query(sql, [id], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Erro no servidor' });
+    values.push(id);
+
+    try {
+        const [result] = await db.promise().query(sql, values);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
         res.status(200).json({ message: 'Usuário atualizado com sucesso!' });
-    });
+    } catch (err) {
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
 });
 
 router.delete('/usuarios/:id', (req, res) => {
