@@ -6,6 +6,7 @@ const db = require('./db');
 const multer = require('multer');
 const upload = multer({ storage: multer.memoryStorage() });
 const mysql = require('mysql2/promise');
+const nodemailer = require('nodemailer');
 
 const router = express.Router();
 
@@ -329,6 +330,32 @@ router.post('/criar-pedido', [
     } catch (error) {
         console.error('Erro ao criar pedido:', error); 
         res.status(500).json({ message: 'Erro no servidor' });
+    }
+});
+
+router.post('/api/send-email', async (req, res) => {
+    const { to, subject, text } = req.body;
+    const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASS,
+        },
+    });
+
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to,
+        subject,
+        text,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: 'Email enviado com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao enviar email:', error);
+        res.status(500).json({ message: 'Erro ao enviar email' });
     }
 });
 
