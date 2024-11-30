@@ -351,11 +351,13 @@ router.post('/api/send-email', async (req, res) => {
     };
 
     try {
+        console.log('Tentando enviar email para:', to);
         await transporter.sendMail(mailOptions);
+        console.log('Email enviado com sucesso para:', to);
         res.status(200).json({ message: 'Email enviado com sucesso!' });
     } catch (error) {
         console.error('Erro ao enviar email:', error);
-        res.status(500).json({ message: 'Erro ao enviar email' });
+        res.status(500).json({ message: 'Erro ao enviar email', error: error.message });
     }
 });
 
