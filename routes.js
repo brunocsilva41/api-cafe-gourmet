@@ -218,6 +218,66 @@ router.put('/usuarios/:id', [
     }
 });
 
+router.put('/editar-cadastro', verificarAutenticacao, [
+    body('Id').isInt(),
+    body('nome').optional().trim().escape(),
+    body('email').optional().isEmail().normalizeEmail(),
+    body('role').optional().isIn(['admin', 'user']),
+    body('endereco').optional().trim().escape(),
+    body('telefone_usuario').optional().trim().escape()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { Id, nome, email, role, endereco, telefone_usuario } = req.body;
+    let sql = 'UPDATE usuarios SET ';
+    let updates = [];
+    let values = [];
+
+    if (nome) {
+        updates.push('nome = ?');
+        values.push(nome);
+    }
+    if (email) {
+        updates.push('email = ?');
+        values.push(email);
+    }
+    if (role) {
+        updates.push('role = ?');
+        values.push(role);
+    }
+    if (endereco) {
+        updates.push('endereco = ?');
+        values.push(endereco);
+    }
+    if (telefone_usuario) {
+        updates.push('telefone_usuario = ?');
+        values.push(telefone_usuario);
+    }
+
+    if (updates.length === 0) {
+        return res.status(400).json({ message: 'Nenhum campo para atualizar' });
+    }
+
+    sql += updates.join(', ') + ' WHERE Id = ?';
+    values.push(Id);
+
+    try {
+        const [result] = await db.promise().query(sql, values);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        const [updatedUser] = await db.promise().query('SELECT Id, nome, email, role, endereco, telefone_usuario FROM usuarios WHERE Id = ?', [Id]);
+        res.status(200).json({ message: 'Cadastro atualizado com sucesso!', user: updatedUser[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar cadastro:', err);
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
+});
+
 router.delete('/usuarios/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'DELETE FROM usuarios WHERE Id = ?';
