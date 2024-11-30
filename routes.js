@@ -291,15 +291,6 @@ router.get('/api/produtos/:id', (req, res) => {
     });
 });
 
-router.get('/api/user-details/:id', verificarAutenticacao, (req, res) => {
-    const { id } = req.params;
-    const sql = 'SELECT id, nome, email, data_criacao, endereco, telefone_usuario, imagem_usuario, role FROM usuarios WHERE Id = ?';
-    db.query(sql, [id], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Erro no servidor' });
-        if (result.length === 0) return res.status(404).json({ message: 'Usuário não encontrado' });
-        res.status(200).json(result[0]);
-    });
-});
 
 router.put('/api/user-details/:id', verificarAutenticacao, [
     body('name').optional().trim().escape(),
