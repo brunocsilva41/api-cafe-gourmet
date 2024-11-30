@@ -84,6 +84,71 @@ router.post('/login-conta', [
     });
 });
 
+router.post('/criar-conta-social', [
+    body('email').isEmail().normalizeEmail(),
+    body('name').isLength({ min: 1 }).trim().escape(),
+    body('password').isLength({ min: 3 }).trim().escape()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { name, email, password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const role = 'user';
+
+    const sql = `INSERT INTO usuarios (nome, email, senha, role) VALUES (?, ?, ?, ?)`;
+    const values = [name, email, hashedPassword, role];
+
+    db.query(sql, values, (err, result) => {
+        if (err) throw err;
+        const token = jwt.sign(
+            { userId: result.insertId, role },
+            process.env.JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        res.status(201).json({ message: 'Conta criada com sucesso!', token });
+    });
+});
+
+router.post('/login-social', [
+    body('email').isEmail().normalizeEmail()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    const { email } = req.body;
+    const sql = `SELECT * FROM usuarios WHERE email = ?`;
+    db.query(sql, [email], async (err, result) => {
+        if (err) {
+            console.error('Erro na consulta ao banco de dados:', err);
+            return res.status(500).json({ message: 'Erro no servidor' });
+        }
+        if (result.length > 0) {
+            const user = result[0];
+            const token = jwt.sign(
+                { userId: user.Id, role: user.role },
+                process.env.JWT_SECRET,
+                { expiresIn: '1h' }
+            );
+            res.status(200).json({
+                message: 'Login realizado com sucesso!',
+                token,
+                userId: user.id,
+                userName: user.nome,
+                userEmail: user.email,
+                userAddress: user.endereco,
+                userPhone: user.telefone_usuario,
+                userImage: user.imagem_usuario,
+                role: user.role,
+            });
+        } else {
+            res.status(401).json({ message: 'Usuário não encontrado' });
+        }
+    });
+});
+
 router.get('/usuarios', (req, res) => {
     const sql = 'SELECT Id, nome, email, role , endereco ,telefone_usuario FROM usuarios';
     db.query(sql, (err, results) => {
