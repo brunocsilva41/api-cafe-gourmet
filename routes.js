@@ -335,6 +335,9 @@ router.post('/criar-pedido', [
 
 router.post('/api/send-email', async (req, res) => {
     const { to, subject, text } = req.body;
+    console.log('EMAIL_USER:', process.env.EMAIL_USER);
+    console.log('EMAIL_PASS:', process.env.EMAIL_PASS);
+
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
