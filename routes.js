@@ -11,11 +11,11 @@ const nodemailer = require('nodemailer');
 const router = express.Router();
 
 router.post('/criar-conta', [
-    body('name').isLength({ min: 1 }).trim().escape(),
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 3 }).trim().escape(),
-    body('address').isLength({ min: 1 }).trim().escape(),
-    body('phone').isLength({ min: 1 }).trim().escape()
+    body('name').isLength({min: 1}).trim().escape(),
+    body('address').optional().trim().escape(),
+    body('phone').optional().trim().escape()
 ], async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -24,8 +24,11 @@ router.post('/criar-conta', [
     const { name, email, password, address, phone } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
     const role = 'user';
+
     const sql = `INSERT INTO usuarios (nome, email, senha, endereco, telefone_usuario, role) VALUES (?, ?, ?, ?, ?, ?)`;
-    db.query(sql, [name, email, hashedPassword, address, phone, role], (err, result) => {
+    const values = [name || null, email, hashedPassword, address || null, phone || null, role];
+
+    db.query(sql, values, (err, result) => {
         if (err) throw err;
         res.status(201).json({ message: 'Conta criada com sucesso!' });
     });
