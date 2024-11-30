@@ -148,6 +148,33 @@ router.post('/login-social', [
         }
     });
 });
+router.post('/consulta-usuario', []
+    , async (req, res) => {
+        const { email } = req.body;
+        const sql = 'SELECT * FROM usuarios WHERE email = ?';
+        db.query(sql, [email], async (err, result) => {
+            if (err) {
+                console.error('Erro na consulta ao banco de dados:', err);
+                return res.status(500).json({ message: 'Erro no servidor' });
+            }
+            if (result.length > 0) {
+                const user = result[0];
+                res.status(200).json({
+                    message: 'Usuário encontrado com sucesso!',
+                    userId: user.Id,
+                    userName: user.nome,
+                    userEmail: user.email,
+                    userAddress: user.endereco,
+                    userPhone: user.telefone_usuario,
+                    userImage: user.imagem_usuario,
+                    role: user.role,
+                });
+            } else {
+                res.status(401).json({ message: 'Usuário não encontrado' });
+            }
+        });
+    });
+
 
 router.get('/usuarios', (req, res) => {
     const sql = 'SELECT Id, nome, email, role , endereco ,telefone_usuario FROM usuarios';
