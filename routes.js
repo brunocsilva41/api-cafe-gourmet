@@ -364,4 +364,42 @@ router.post('/api/send-email', async (req, res) => {
     }
 });
 
+router.post('/api/reset-password', verificarAutenticacao, [
+    body('userId').isInt(),
+    body('currentPassword').isLength({ min: 3 }).trim().escape(),
+    body('newPassword').isLength({ min: 3 }).trim().escape()
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { userId, currentPassword, newPassword } = req.body;
+
+    try {
+        const sql = 'SELECT senha FROM usuarios WHERE Id = ?';
+        const [result] = await db.promise().query(sql, [userId]);
+
+        if (result.length === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        const user = result[0];
+        const match = await bcrypt.compare(currentPassword, user.senha);
+
+        if (!match) {
+            return res.status(401).json({ message: 'Senha atual incorreta' });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        const updateSql = 'UPDATE usuarios SET senha = ? WHERE Id = ?';
+        await db.promise().query(updateSql, [hashedNewPassword, userId]);
+
+        res.status(200).json({ success: true, message: 'Senha alterada com sucesso!' });
+    } catch (error) {
+        console.error('Erro ao alterar a senha:', error);
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
+});
+
 module.exports = router;
