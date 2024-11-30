@@ -351,63 +351,6 @@ router.get('/api/produtos/:id', (req, res) => {
     });
 });
 
-
-router.put('/api/user-details/:id', verificarAutenticacao, [
-    body('name').optional().trim().escape(),
-    body('email').optional().isEmail().normalizeEmail(),
-    body('address').optional().trim().escape(),
-    body('phone').optional().trim().escape(),
-    body('role').optional().isIn(['admin', 'user'])
-], async (req, res) => {
-    const { id } = req.params;
-    const { name, email, address, phone, role } = req.body;
-    let sql = 'UPDATE usuarios SET ';
-    let updates = [];
-    let values = [];
-
-    if (name) {
-        updates.push('nome = ?');
-        values.push(name);
-    }
-    if (email) {
-        updates.push('email = ?');
-        values.push(email);
-    }
-    if (address) {
-        updates.push('endereco = ?');
-        values.push(address);
-    }
-    if (phone) {
-        updates.push('telefone_usuario = ?');
-        values.push(phone);
-    }
-    if (role) {
-        updates.push('role = ?');
-        values.push(role);
-    }
-
-    if (updates.length === 0) {
-        return res.status(400).json({ message: 'Nenhum campo para atualizar' });
-    }
-
-    sql += updates.join(', ') + ' WHERE Id = ?';
-    values.push(id);
-
-    try {
-        const [result] = await db.promise().query(sql, values);
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: 'Usuário não encontrado' });
-        }
-
-        const [updatedUser] = await db.promise().query('SELECT Id, nome, email, role, endereco, telefone_usuario FROM usuarios WHERE Id = ?', [id]);
-        res.status(200).json({ message: 'Usuário atualizado com sucesso!', user: updatedUser[0] });
-    } catch (err) {
-        console.error('Erro ao atualizar usuário:', err);
-        res.status(500).json({ message: 'Erro no servidor' });
-    }
-});
-
-
 router.get('/api/user-details/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'SELECT  id , nome, email, data_criacao, endereco, telefone_usuario, imagem_usuario FROM usuarios WHERE Id = ?';
