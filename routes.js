@@ -298,21 +298,53 @@ router.put('/api/user-details/:id', verificarAutenticacao, [
     body('address').optional().trim().escape(),
     body('phone').optional().trim().escape(),
     body('role').optional().isIn(['admin', 'user'])
-], (req, res) => {
+], async (req, res) => {
     const { id } = req.params;
     const { name, email, address, phone, role } = req.body;
     let sql = 'UPDATE usuarios SET ';
     let updates = [];
-    if (name) updates.push(`nome = '${name}'`);
-    if (email) updates.push(`email = '${email}'`);
-    if (address) updates.push(`endereco = '${address}'`);
-    if (phone) updates.push(`telefone_usuario = '${phone}'`);
-    if (role) updates.push(`role = '${role}'`);
+    let values = [];
+
+    if (name) {
+        updates.push('nome = ?');
+        values.push(name);
+    }
+    if (email) {
+        updates.push('email = ?');
+        values.push(email);
+    }
+    if (address) {
+        updates.push('endereco = ?');
+        values.push(address);
+    }
+    if (phone) {
+        updates.push('telefone_usuario = ?');
+        values.push(phone);
+    }
+    if (role) {
+        updates.push('role = ?');
+        values.push(role);
+    }
+
+    if (updates.length === 0) {
+        return res.status(400).json({ message: 'Nenhum campo para atualizar' });
+    }
+
     sql += updates.join(', ') + ' WHERE Id = ?';
-    db.query(sql, [id], (err, result) => {
-        if (err) return res.status(500).json({ message: 'Erro no servidor' });
-        res.status(200).json({ message: 'Usuário atualizado com sucesso!' });
-    });
+    values.push(id);
+
+    try {
+        const [result] = await db.promise().query(sql, values);
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+
+        const [updatedUser] = await db.promise().query('SELECT Id, nome, email, role, endereco, telefone_usuario FROM usuarios WHERE Id = ?', [id]);
+        res.status(200).json({ message: 'Usuário atualizado com sucesso!', user: updatedUser[0] });
+    } catch (err) {
+        console.error('Erro ao atualizar usuário:', err);
+        res.status(500).json({ message: 'Erro no servidor' });
+    }
 });
 
 router.get('/api/user-details/:id', (req, res) => {
