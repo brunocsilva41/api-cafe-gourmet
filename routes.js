@@ -406,12 +406,6 @@ router.put('/api/user-details/:id', verificarAutenticacao, [
         res.status(500).json({ message: 'Erro no servidor' });
     }
 });
-        res.status(200).json({ message: 'Usuário atualizado com sucesso!', user: updatedUser[0] });
-    } catch (err) {
-        console.error('Erro ao atualizar usuário:', err);
-        res.status(500).json({ message: 'Erro no servidor' });
-    }
-});
 
 
 router.get('/api/user-details/:id', (req, res) => {
