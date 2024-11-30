@@ -6,6 +6,7 @@ const routes = require('./routes');
 require('dotenv').config();
 
 const allowedOrigins = [
+    origin = '*',
     'https://coffeforyou.netlify.app',
     'https://coffeforyou.netlify.app/produtos',
     'https://coffeforyou.netlify.app/login-conta',
