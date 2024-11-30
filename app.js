@@ -7,6 +7,17 @@ require('dotenv').config();
 
 const allowedOrigins = [
     origin = '*',
+    'http://localhost:3000',
+    'http://localhost:3000/produtos',
+    'http://localhost:3000/conta',
+    'http://localhost:3000/login',
+    'http://localhost:3000/criar-conta',
+    'http://localhost:3000/admin-dashboard',
+    'http://localhost:3000/usuarios',
+    'http://localhost:3000/logs',
+    'http://localhost:3000/api/produtos',
+    'http://localhost:3000/api/produtos/:id',
+    'http://localhost:3000/usuarios/:id',
     'https://coffeforyou.netlify.app',
     'https://coffeforyou.netlify.app/produtos',
     'https://coffeforyou.netlify.app/login-conta',
