@@ -305,6 +305,54 @@ router.put('/editar-cadastro', verificarAutenticacao, [
     }
 });
 
+router.put('/recuperar-senha', async (req, res) => {
+    const { email } = req.body;
+    const sql = 'SELECT * FROM usuarios WHERE email = ?';
+    db.query(sql, [email], async (err, result) => {
+        if (err) {
+            console.error('Erro na consulta ao banco de dados:', err);
+            return res.status(500).json({ message: 'Erro no servidor' });
+        }
+        if (result.length > 0) {
+            const tempPassword = Math.random().toString(36).slice(-6);
+            const hashedPassword = await bcrypt.hash(tempPassword, 10);
+            const updateSql = 'UPDATE usuarios SET senha = ? WHERE email = ?';
+            db.query(updateSql, [hashedPassword, email], async (err, result) => {
+                if (err) {
+                    console.error('Erro ao atualizar senha no banco de dados:', err);
+                    return res.status(500).json({ message: 'Erro no servidor' });
+                }
+
+                // Enviar email com a senha temporária
+                const transporter = nodemailer.createTransport({
+                    service: 'gmail',
+                    auth: {
+                        user: process.env.EMAIL_USER,
+                        pass: process.env.EMAIL_PASS,
+                    },
+                });
+
+                const mailOptions = {
+                    from: process.env.EMAIL_USER,
+                    to: email,
+                    subject: 'Recuperação de Senha',
+                    text: `Sua nova senha temporária é: ${tempPassword}`,
+                };
+
+                try {
+                    await transporter.sendMail(mailOptions);
+                    res.status(200).json({ message: 'Senha alterada com sucesso! Verifique seu email para a nova senha.' });
+                } catch (error) {
+                    console.error('Erro ao enviar email:', error);
+                    res.status(500).json({ message: 'Erro ao enviar email', error: error.message });
+                }
+            });
+        } else {
+            res.status(404).json({ message: 'Usuário não encontrado' });
+        }
+    });
+});
+
 router.delete('/usuarios/:id', (req, res) => {
     const { id } = req.params;
     const sql = 'DELETE FROM usuarios WHERE Id = ?';
