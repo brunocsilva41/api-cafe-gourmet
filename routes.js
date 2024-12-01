@@ -305,7 +305,7 @@ router.put('/editar-cadastro', verificarAutenticacao, [
     }
 });
 
-router.put('/recuperar-senha', async (req, res) => {
+router.post('/recuperar-senha', async (req, res) => {
     const { email } = req.body;
     const sql = 'SELECT * FROM usuarios WHERE email = ?';
     db.query(sql, [email], async (err, result) => {
@@ -323,7 +323,7 @@ router.put('/recuperar-senha', async (req, res) => {
                     return res.status(500).json({ message: 'Erro no servidor' });
                 }
 
-                // Enviar email com a senha temporária
+                
                 const transporter = nodemailer.createTransport({
                     service: 'gmail',
                     auth: {
